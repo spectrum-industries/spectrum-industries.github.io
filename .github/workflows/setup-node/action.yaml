@@ -3,9 +3,7 @@ run-name: "Setup Node.js ⚙️ - Cache dependencies ⚡ - Install dependencies 
 on:
   push:
     branches:
-      - release
-      - main 
-      - dev
+      - main
 jobs:
   Unit-Testing-MobileBackend:
     runs-on: ubuntu-latest
