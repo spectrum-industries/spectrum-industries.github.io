@@ -3,11 +3,8 @@ import LoginForm from '@/app/ui/login-form';
 import { redirect } from 'next/navigation';
 import { auth } from '../auth';
  
-export default async function LoginPage() {
-  const session = await auth();
-  if (session?.user){
-    redirect("/dashboard");
-  }  
+export default async function Unauthorized() {
+
   return (
     <main className="flex items-center justify-center min-h-screen">
       <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-0">
@@ -16,7 +13,7 @@ export default async function LoginPage() {
             <AcmeLogo />
           </div>
         </div>
-        <LoginForm />
+        <p>Oops, looks like you're not authorized to be in this page. If you need access to this page, you should contact the team and let them know so you can be approved</p>
       </div>
     </main>
   );

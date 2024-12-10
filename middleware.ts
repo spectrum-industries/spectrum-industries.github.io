@@ -2,10 +2,9 @@ import { auth } from "@/app/auth";
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-
   // Exclude '/' route from being redirected to '/login'
-  if (!req.auth && pathname !== "/login" && pathname !== "/") {
-    const newUrl = new URL("/login", req.nextUrl.origin);
+  if (!req.auth && pathname !== "/login" && pathname !== "/unauthorized" && pathname !== "/") {
+    const newUrl = new URL("/", req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 });
