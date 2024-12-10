@@ -9,6 +9,12 @@ export type User = {
   password: string;
 };
 
+export type Places = {
+  id: string;
+  place: string;
+  vistied: boolean;
+};
+
 export type Customer = {
   id: string;
   name: string;

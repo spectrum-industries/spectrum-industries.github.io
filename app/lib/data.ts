@@ -119,6 +119,33 @@ export async function fetchFilteredInvoices(
     throw new Error('Failed to fetch invoices.');
   }
 }
+export async function fetchFilteredPlaces(
+  query: string,
+  currentPage: number,
+) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const places = await sql<InvoicesTable>`
+      SELECT
+        id,
+        name,
+        visited,
+      FROM places
+      WHERE
+        id ILIKE ${`%${query}%`} OR
+        customers.email ILIKE ${`%${query}%`} OR
+        visited::text ILIKE ${`%${query}%`} OR
+      ORDER BY id ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `;
+
+    return places.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoices.');
+  }
+}
 
 export async function fetchInvoicesPages(query: string) {
   try {
