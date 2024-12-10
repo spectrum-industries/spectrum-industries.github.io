@@ -4,8 +4,10 @@ import {
   CustomersTableType,
   InvoiceForm,
   InvoicesTable,
+  PlacesTable,
   LatestInvoiceRaw,
   Revenue,
+  PlacesForm,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -84,7 +86,7 @@ export async function fetchCardData() {
   }
 }
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 10;
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
@@ -126,16 +128,14 @@ export async function fetchFilteredPlaces(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const places = await sql<InvoicesTable>`
+    const places = await sql<PlacesTable>`
       SELECT
         id,
-        name,
-        visited,
+        place,
+        visited
       FROM places
       WHERE
-        id ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        visited::text ILIKE ${`%${query}%`} OR
+        place ILIKE ${`%${query}%`}
       ORDER BY id ASC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
@@ -143,7 +143,7 @@ export async function fetchFilteredPlaces(
     return places.rows;
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoices.');
+    throw new Error('Failed to fetch pages.');
   }
 }
 
@@ -241,5 +241,37 @@ export async function fetchFilteredCustomers(query: string) {
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch customer table.');
+  }
+}
+
+export async function fetchPlacesPages(query: string) {
+  try {
+    const count = await sql`SELECT COUNT(*)
+    FROM places
+    WHERE
+      place ILIKE ${`%${query}%`}
+  `;
+    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of places.');
+  }
+}
+
+export async function fetchPlaceById(id: string) {
+  try {
+    const data = await sql<PlacesForm>`
+      SELECT
+        places.id,
+        places.place,
+        places.visited
+      FROM places
+      WHERE places.id = ${id};
+    `;
+    return data.rows[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoice.');
   }
 }

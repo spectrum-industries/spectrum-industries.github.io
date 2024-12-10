@@ -92,3 +92,15 @@ export type InvoiceForm = {
   amount: number;
   status: 'pending' | 'paid';
 };
+
+export type PlacesTable = {
+  id: number;
+  place: string;
+  visited: boolean;
+};
+
+export type PlacesForm = {
+  id: number;
+  place: string;
+  visited: boolean;
+};

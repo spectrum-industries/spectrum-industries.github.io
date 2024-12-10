@@ -7,9 +7,7 @@ import { redirect } from 'next/navigation';
 
 const FormSchema = z.object({
   id: z.string(),
-  customerId: z.string({
-    invalid_type_error: 'Please select a customer.',
-  }),
+  customerId: z.string(),
   amount: z.coerce
     .number()
     .gt(0, { message: 'Please enter an amount greater than $0.' }),
@@ -28,8 +26,25 @@ export type State = {
   message?: string | null;
 };
 
+const PlaceFormSchema = z.object({
+  id: z.string(),
+  place: z.string(),
+  visited: z.boolean()
+});
+
+export type PlaceState = {
+  errors?: {
+    place?: string[];
+    visited?: string[];
+  };
+  message?: string | null;
+};
+
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
+const UpdatePlace = PlaceFormSchema.omit({ id: true, place: true });
+const CreatePlace = PlaceFormSchema.omit({ id: true});
+
 
 export async function createInvoice(prevState: State, formData: FormData) {
   // Validate form using Zod
@@ -101,6 +116,74 @@ export async function deleteInvoice(id: string) {
 } catch(error) {
   return {
     message: 'Database Error: Failed to Delete Invoice.',
+  };
+}
+}
+
+export async function createPlace(prevState: PlaceState, formData: FormData) {
+  // Validate form using Zod
+  const validatedFields = CreatePlace.safeParse({
+    place: formData.get('place'),
+    visited: formData.get('visited') == "visited",
+  });
+ 
+  // If form validation fails, return errors early. Otherwise, continue.
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Place.',
+    };
+  }
+ 
+  // Prepare data for insertion into the database
+  const { place, visited } = validatedFields.data;
+ 
+  // Insert data into the database
+  try {
+    await sql`
+      INSERT INTO places (place, visited)
+      VALUES (${place}, ${visited})
+    `;
+  } catch (error) {
+    // If a database error occurs, return a more specific error.
+    return {
+      message: 'Database Error: Failed to Create Invoice.',
+    };
+  }
+ 
+  // Revalidate the cache for the invoices page and redirect the user.
+  revalidatePath('/dashboard/places');
+  redirect('/dashboard/places');
+}
+
+export async function updatePlace(id: string, formData: FormData) {
+  const { visited } = UpdatePlace.parse({
+    visited: formData.get('visited') == "visited",
+  });
+  
+  try{
+  await sql`
+    UPDATE places
+    SET visited = ${visited}
+    WHERE id = ${id}
+  `;
+  } catch(error) {
+    return {
+      message: 'Database Error: Failed to Update Places.',
+    };
+  }
+  revalidatePath('/dashboard/places');
+  redirect('/dashboard/places');
+}
+
+export async function deletePlace(id: string) {
+  try{
+  await sql`DELETE FROM places WHERE id = ${id}`;
+  revalidatePath('/dashboard/places');
+  return { message: 'Deleted Place.' };
+} catch(error) {
+  return {
+    message: 'Database Error: Failed to Delete Place.',
   };
 }
 }
