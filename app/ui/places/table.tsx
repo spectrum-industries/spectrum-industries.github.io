@@ -7,12 +7,13 @@ import { fetchFilteredPlaces } from '@/app/lib/data';
 export default async function PlacesTable({
   query,
   currentPage,
+  visited
 }: {
   query: string;
   currentPage: number;
+  visited: string;
 }) {
-  const places = await fetchFilteredPlaces(query, currentPage);
-
+  const places = await fetchFilteredPlaces(query, currentPage, visited);
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">

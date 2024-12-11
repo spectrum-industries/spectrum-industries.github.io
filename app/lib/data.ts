@@ -121,31 +121,50 @@ export async function fetchFilteredInvoices(
     throw new Error('Failed to fetch invoices.');
   }
 }
+
 export async function fetchFilteredPlaces(
   query: string,
   currentPage: number,
+  visited: string
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-
   try {
-    const places = await sql<PlacesTable>`
-      SELECT
-        id,
-        place,
-        visited
-      FROM places
-      WHERE
-        place ILIKE ${`%${query}%`}
-      ORDER BY id ASC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
-
-    return places.rows;
+    let places = null;
+    if (visited === "") {
+      places = await sql<PlacesTable>`
+        SELECT
+          id,
+          place,
+          visited
+        FROM places
+        WHERE
+          place ILIKE ${`%${query}%`}
+        ORDER BY id ASC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `;
+    } else {
+      // Convert visited to a boolean value for the query
+      const visitedCondition = visited === "visited" ? true : false;
+      places = await sql<PlacesTable>`
+        SELECT
+          id,
+          place,
+          visited
+        FROM places
+        WHERE
+          place ILIKE ${`%${query}%`}
+          AND visited = ${visitedCondition}
+        ORDER BY id ASC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `;
+    }
+    return places?.rows;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch pages.');
   }
 }
+
 
 export async function fetchInvoicesPages(query: string) {
   try {
@@ -244,13 +263,25 @@ export async function fetchFilteredCustomers(query: string) {
   }
 }
 
-export async function fetchPlacesPages(query: string) {
+export async function fetchPlacesPages(query: string, visited: string) {
+  const visitedBool = visited == "visited"? true : false;
+  
   try {
-    const count = await sql`SELECT COUNT(*)
-    FROM places
-    WHERE
-      place ILIKE ${`%${query}%`}
-  `;
+    let count = null
+    if (visited == ""){
+      count = await sql`SELECT COUNT(*)
+      FROM places
+      WHERE
+        place ILIKE ${`%${query}%`}
+    `;
+    } else {
+      count = await sql`SELECT COUNT(*)
+      FROM places
+      WHERE
+        place ILIKE ${`%${query}%`}
+        AND visited = ${visitedBool}
+    `;
+    }
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {

@@ -1,9 +1,31 @@
+'use client'
+
 import {
   CheckIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 
-export async function Filters() {
+export function Filters() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  const handleToggle = async function visitedParam(visited : string | null) {
+    const params = new URLSearchParams(searchParams);
+    if (visited) {
+      params.set('visited', visited);
+    } else {
+      params.delete('visited');
+    }
+    replace(`${pathname}?${params.toString()}`);
+    }
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value === 'visited' ? 'visited' : 'pending';
+      handleToggle(value);
+  };
+  
   return(
     <fieldset>
           <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
@@ -15,6 +37,8 @@ export async function Filters() {
                   type="radio"
                   value="pending"
                   className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
+                  onChange={handleChange}
+                  checked={searchParams.get('visited')?.toString() == "pending"}
                 />
                 <label
                   htmlFor="pending"
@@ -30,6 +54,8 @@ export async function Filters() {
                   type="radio"
                   value="visited"
                   className="h-4 w-4 cursor-pointer border-gray-300 bg-gray-100 text-gray-600 focus:ring-2"
+                  onChange={handleChange}
+                  checked={searchParams.get('visited')?.toString() == "visited"}
                 />
                 <label
                   htmlFor="visited"
