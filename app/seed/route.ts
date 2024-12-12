@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { db } from '@vercel/postgres';
-import { invoices, customers, revenue, users, places } from '../lib/placeholder-data';
+import { invoices, customers, revenue, users, places, photos } from '../lib/placeholder-data';
 
 const client = await db.connect();
 
@@ -121,6 +121,42 @@ async function seedPlaces() {
   return insertedPlaces;
 }
 
+
+async function seedPhotos() {
+  await client.sql`
+    CREATE TABLE IF NOT EXISTS album (
+      id INT NOT NULL UNIQUE,
+      photo VARCHAR(255) NOT NULL UNIQUE,
+      created_date DATE,
+      orientation VARCHAR(255) NOT NULL,
+      height INT NOT NULL,
+      width INT NOT NULL
+    );
+  `;
+
+  const insertedPhotos = await Promise.all(
+    photos.map(async (photo) => {
+      try {
+        await client.sql`
+          INSERT INTO album (photo, created_date, orientation, height, width)
+          VALUES (
+            ${process.env.AMAZON_BUCKET_URL + "/" + photo["Photo Name"]}, 
+            ${photo["Date Created"]}, 
+            ${photo["Orientation"]}, 
+            ${photo["Height"]}, 
+            ${photo["Width"]}
+          );
+        `;
+        console.log("Uploaded:", photo);
+      } catch (err) {
+        console.error("Failed to insert photo:", photo, err);
+      }
+    })
+  );
+
+  return insertedPhotos;
+}
+
 export async function GET() {
   try {
     await client.sql`BEGIN`;
@@ -128,7 +164,8 @@ export async function GET() {
     // await seedCustomers();
     // await seedInvoices();
     // await seedRevenue();
-    await seedPlaces();
+    // await seedPlaces();
+    // await seedPhotos();
     await client.sql`COMMIT`;
 
     return Response.json({ message: 'Database seeded successfully' });

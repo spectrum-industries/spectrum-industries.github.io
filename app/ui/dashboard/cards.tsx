@@ -3,13 +3,15 @@ import {
   ClockIcon,
   UserGroupIcon,
   InboxIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline';
 import { lusitana } from '@/app/ui/fonts';
 import { fetchCardData } from '@/app/lib/data';
+import { fetchFilteredPlacesCount, fetchPhotosCount } from '@/app/lib/data';
 
 const iconMap = {
   collected: BanknotesIcon,
-  customers: UserGroupIcon,
+  days: CalendarIcon,
   pending: ClockIcon,
   invoices: InboxIcon,
 };
@@ -21,17 +23,29 @@ export default async function CardWrapper() {
     totalPaidInvoices,
     totalPendingInvoices,
   } = await fetchCardData();
+  const places = await fetchFilteredPlacesCount()
+  const photos = await fetchPhotosCount()
+  let date1 = new Date("06/12/2023");
+  let date2 = new Date();
+
+  let Difference_In_Time =
+    date2.getTime() - date1.getTime();
+
+  let Difference_In_Days =
+    Math.round
+        (Difference_In_Time / (1000 * 3600 * 24));
+
   return (
     <>
       {/* NOTE: Uncomment this code in Chapter 9 */}
 
-      <Card title="Pictures" value={totalPaidInvoices} type="collected" />
+      <Card title="Pictures" value={photos} type="collected" />
       <Card title="Dates" value={totalPendingInvoices} type="pending" />
-      <Card title="Places" value={numberOfInvoices} type="invoices" />
+      <Card title="Places we've been" value={places} type="invoices" />
       <Card
-        title="Days we have dated"
-        value={numberOfCustomers}
-        type="customers"
+        title="Days since we started dating"
+        value={Difference_In_Days}
+        type="days"
       />
     </>
   );
@@ -44,7 +58,7 @@ export function Card({
 }: {
   title: string;
   value: number | string;
-  type: 'invoices' | 'customers' | 'pending' | 'collected';
+  type: 'invoices' | 'days' | 'pending' | 'collected';
 }) {
   const Icon = iconMap[type];
 

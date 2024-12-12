@@ -10,6 +10,7 @@ import {
   PlacesForm,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { Truculenta } from 'next/font/google';
 
 export async function fetchRevenue() {
   try {
@@ -306,3 +307,43 @@ export async function fetchPlaceById(id: string) {
     throw new Error('Failed to fetch invoice.');
   }
 }
+
+export async function fetchFilteredPlacesCount() {
+  try {
+    let places = null;
+      // Convert visited to a boolean value for the query
+      const visitedCondition = true;
+      places = await sql`
+        SELECT
+          COUNT(*)
+        FROM places
+        WHERE
+         visited = ${visitedCondition};
+      `;
+      if(places){
+        return places?.rows[0]?.count;
+      }
+      else return 0;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch pages.');
+  }
+}
+
+export async function fetchPhotosCount() {
+  try {
+    let photos = await sql`
+        SELECT
+          COUNT(*)
+        FROM album
+      `;
+      if(photos){
+        return photos?.rows[0]?.count;
+      }
+      else return 0;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch pages.');
+  }
+}
+
