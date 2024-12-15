@@ -10,10 +10,10 @@ import { fetchCardData } from '@/app/lib/data';
 import { fetchFilteredPlacesCount, fetchPhotosCount } from '@/app/lib/data';
 
 const iconMap = {
-  collected: BanknotesIcon,
+  pictures: BanknotesIcon,
   days: CalendarIcon,
   pending: ClockIcon,
-  invoices: InboxIcon,
+  visited: InboxIcon,
 };
 
 export default async function CardWrapper() {
@@ -23,7 +23,8 @@ export default async function CardWrapper() {
     totalPaidInvoices,
     totalPendingInvoices,
   } = await fetchCardData();
-  const places = await fetchFilteredPlacesCount()
+  const placesVisited = await fetchFilteredPlacesCount(true)
+  const placesPending = await fetchFilteredPlacesCount(false)
   const photos = await fetchPhotosCount()
   let date1 = new Date("06/12/2023");
   let date2 = new Date();
@@ -37,11 +38,9 @@ export default async function CardWrapper() {
 
   return (
     <>
-      {/* NOTE: Uncomment this code in Chapter 9 */}
-
-      <Card title="Pictures" value={photos} type="collected" />
-      <Card title="Dates" value={totalPendingInvoices} type="pending" />
-      <Card title="Places we've been" value={places} type="invoices" />
+      <Card title="Pictures" value={photos} type="pictures" />
+      <Card title="Places we need to go" value={placesPending} type="pending" />
+      <Card title="Places we've been" value={placesVisited} type="visited" />
       <Card
         title="Days since we started dating"
         value={Difference_In_Days}
@@ -58,7 +57,7 @@ export function Card({
 }: {
   title: string;
   value: number | string;
-  type: 'invoices' | 'days' | 'pending' | 'collected';
+  type: 'visited' | 'days' | 'pending' | 'pictures';
 }) {
   const Icon = iconMap[type];
 

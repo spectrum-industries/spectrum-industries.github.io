@@ -308,11 +308,9 @@ export async function fetchPlaceById(id: string) {
   }
 }
 
-export async function fetchFilteredPlacesCount() {
+export async function fetchFilteredPlacesCount(visitedCondition : boolean) {
   try {
     let places = null;
-      // Convert visited to a boolean value for the query
-      const visitedCondition = true;
       places = await sql`
         SELECT
           COUNT(*)
@@ -347,3 +345,82 @@ export async function fetchPhotosCount() {
   }
 }
 
+export async function fetchRandomPhoto() {
+  try {
+    let photosCount = await fetchPhotosCount()
+    let randomNumber = Math.floor(Math.random() * photosCount) + 1;
+    let photo = await sql`
+      SELECT 
+        *
+      FROM album
+      WHERE 
+      ID = ${randomNumber}  
+    `
+    if(photo){
+    return photo?.rows[0]
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch pages.');
+  }
+}
+
+export async function fetchTestLandscapePhoto() {
+  try {
+    let photo = await sql`
+      SELECT 
+        *
+      FROM album
+      WHERE 
+      ID = ${438}  
+    `
+    if(photo){
+    return photo?.rows[0]
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch pages.');
+  }
+}
+
+export async function fetchTestPortraitPhoto() {
+  try {
+    let photo = await sql`
+      SELECT 
+        *
+      FROM album
+      WHERE 
+      ID = ${444}  
+    `
+    if(photo){
+    return photo?.rows[0]
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch pages.');
+  }
+}
+
+
+export async function fetchPhotosDimensions() {
+  try {
+    let photos = await sql`
+        SELECT
+          DISTINCT height, width
+        FROM album
+      `;
+      if(photos){
+        return photos;
+      }
+      else return 0;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch pages.');
+  }
+}
