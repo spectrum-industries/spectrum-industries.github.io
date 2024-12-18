@@ -14,7 +14,7 @@ async function fetchPhotosinBatch(offset : number) {
       OFFSET ${offset * ITEMS_PER_PAGE}
       LIMIT ${ITEMS_PER_PAGE}
     `;
-    if(photos){
+    if(photos.rows){
       return photos.rows;
     }
     else{
