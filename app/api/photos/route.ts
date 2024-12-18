@@ -1,14 +1,18 @@
 import { db } from '@vercel/postgres'; 
+import { type NextRequest } from 'next/server'
 
 const client = await db.connect();
 
-async function fetchPhotos() {
+const ITEMS_PER_PAGE = 10
+
+async function fetchPhotosinBatch(offset : number) {
   try {
     const photos = await client.sql`
       SELECT 
         * 
       FROM album
-      LIMIT 10;
+      OFFSET ${offset * ITEMS_PER_PAGE}
+      LIMIT ${ITEMS_PER_PAGE}
     `;
     if(photos){
       return photos.rows;
@@ -22,9 +26,17 @@ async function fetchPhotos() {
   }
 }
 
-export async function GET() {
+export async function GET(request : NextRequest) {
   try {
-    const photos = await fetchPhotos()
+    const searchParams = request.nextUrl.searchParams
+    const offset = searchParams.get('offset');
+    let photos;
+    if(offset === null){
+      photos = await fetchPhotosinBatch(0)
+    }
+    else{
+      photos = await fetchPhotosinBatch(Number(offset))
+    }
 
     return Response.json({ message: 'Fetched photos', photos: photos });
   } catch (error) {

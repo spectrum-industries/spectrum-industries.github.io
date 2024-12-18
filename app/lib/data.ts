@@ -430,7 +430,7 @@ export async function fetchPhotosInBatch(offset : number) {
     SELECT 
       *
     FROM album
-    OFFSET ${offset * ITEMS_PER_PAGE}
+    OFFSET ${offset * ITEMS_PER_PAGE} ROWS
     LIMIT ${ITEMS_PER_PAGE}
     `
     return photos;
