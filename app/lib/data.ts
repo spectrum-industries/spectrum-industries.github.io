@@ -407,7 +407,6 @@ export async function fetchTestPortraitPhoto() {
   }
 }
 
-
 export async function fetchPhotosDimensions() {
   try {
     let photos = await sql`
@@ -424,3 +423,21 @@ export async function fetchPhotosDimensions() {
     throw new Error('Failed to fetch pages.');
   }
 }
+
+export async function fetchPhotosInBatch(offset : number) {
+  try{
+    let photos = await sql`
+    SELECT 
+      *
+    FROM album
+    OFFSET ${offset * ITEMS_PER_PAGE}
+    LIMIT ${ITEMS_PER_PAGE}
+    `
+    return photos;
+  }
+  catch(error) {
+    console.log(error)
+    throw new Error('Failed to fetch pages')
+  }
+}
+

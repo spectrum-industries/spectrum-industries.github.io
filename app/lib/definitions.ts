@@ -104,3 +104,12 @@ export type PlacesForm = {
   place: string;
   visited: boolean;
 };
+
+export type AlbumTable = {
+  id: number;
+  photo: string;
+  created_date: Date;
+  orientation: string;
+  height: number;
+  width: number;
+}
