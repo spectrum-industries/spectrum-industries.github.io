@@ -1,8 +1,7 @@
 import CardWrapper from '@/app/ui/dashboard/cards';
 import RandomPhoto from '@/app/ui/dashboard/random-photo';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+import PlacesToVisit from '@/app/ui/dashboard/places-to-visit';
 import { lusitana } from '@/app/ui/fonts';
-import { fetchCardData } from '@/app/lib/data';
 import { Suspense } from 'react';
 import { RevenueChartSkeleton, LatestInvoicesSkeleton, CardsSkeleton } from '@/app/ui/skeletons';
 
@@ -22,7 +21,7 @@ export default async function Page() {
           <RandomPhoto />
         </Suspense>
         <Suspense fallback={<LatestInvoicesSkeleton />}>
-          <LatestInvoices/>
+          <PlacesToVisit/>
         </Suspense>
       </div>
     </main>

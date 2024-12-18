@@ -1,61 +1,46 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { AlbumTable } from '@/app/lib/definitions';
 
 export default function Album() {
   const [photos, setPhotos] = useState<AlbumTable[]>([]);
   const [offset, setOffset] = useState<number>(0);
   const [reachedEnd, setReachedEnd] = useState(false);
-  const loaderRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     async function fetchPhotos() {
-      const res = await fetch(`/api/photos?offset=${offset}`);
-      const data = await res.json();
-
-      if (data.photos.length === 0) {
-        setReachedEnd(true); // No more photos to load
-      } else {
-        setPhotos((prev) => [...prev, ...data.photos]);
+      try {
+        const res = await fetch(`/api/photos?offset=${offset}`);
+        if (!res.ok) {
+          console.error('Failed to fetch photos');
+          return;
+        }
+        const data = await res.json();
+        if (data.photos && data.photos.length > 0) {
+          setPhotos((prev) => [...prev, ...data.photos]);
+        } else {
+          setReachedEnd(true);
+        }
+      } catch (error) {
+        console.error('Error fetching photos:', error);
       }
     }
 
     fetchPhotos();
   }, [offset]);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !reachedEnd) {
-          setOffset((prev) => prev + 1); // Adjust offset increment based on your pagination logic
-        }
-      },
-      { threshold: 1 } // Trigger when 100% of the element is visible
-    );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
-      }
-    };
-  }, [reachedEnd]);
-
   return (
-    <>
+    <div style={{backgroundColor: "red"}}>
       <ul>
         {photos.map((photo) => (
           <li key={photo.id}>
-            <img src={photo.photo} alt={String(photo.id)} />
+            <img src={photo.photo} alt={`Photo ID: ${photo.id}`} />
           </li>
         ))}
       </ul>
-      <div ref={loaderRef} style={{ height: 1 }}></div>
+      <div style={{ height: '1px' }} />
       {reachedEnd && <p>No more photos to load!</p>}
-    </>
+    </div>
   );
 }

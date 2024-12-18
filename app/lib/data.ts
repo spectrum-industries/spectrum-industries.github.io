@@ -441,3 +441,19 @@ export async function fetchPhotosInBatch(offset : number) {
   }
 }
 
+export async function fetchPlacesToVisit(){
+  try{
+    let photos = await sql`
+    SELECT 
+      *
+    FROM places
+    WHERE visited = ${false}
+    LIMIT ${ITEMS_PER_PAGE}
+    `
+    return photos.rows;
+  }
+  catch(error) {
+    console.log(error)
+    throw new Error('Failed to fetch pages')
+  }
+}

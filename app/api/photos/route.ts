@@ -3,7 +3,7 @@ import { type NextRequest } from 'next/server'
 
 const client = await db.connect();
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 5
 
 async function fetchPhotosinBatch(offset : number) {
   try {
@@ -40,6 +40,7 @@ export async function GET(request : NextRequest) {
 
     return Response.json({ message: 'Fetched photos', photos: photos });
   } catch (error) {
+    console.log(error)
     return Response.json({ error }, { status: 500 });
   }
 }
