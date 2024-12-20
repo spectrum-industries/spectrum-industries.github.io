@@ -457,3 +457,23 @@ export async function fetchPlacesToVisit(){
     throw new Error('Failed to fetch pages')
   }
 }
+
+export async function fetchPhotoByID(id : number) {
+  try {
+    let photo = await sql`
+      SELECT 
+        *
+      FROM album
+      WHERE 
+      ID = ${id}  
+    `
+    if(photo){
+    return photo?.rows[0]
+    } else {
+      return null
+    }
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch pages.');
+  }
+}

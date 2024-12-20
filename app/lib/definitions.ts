@@ -113,3 +113,12 @@ export type AlbumTable = {
   height: number;
   width: number;
 }
+
+export type PhotoForm = {
+  id: string;
+  orientation: string;
+  height: number;
+  width: number;
+  photo: string;
+  created_date: string;
+};

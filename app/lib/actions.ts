@@ -40,11 +40,16 @@ export type PlaceState = {
   message?: string | null;
 };
 
+const PhotoFormSchema = z.object({
+  id: z.string(),
+  created_date: z.string()
+});
+
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdatePlace = PlaceFormSchema.omit({ id: true, place: true });
 const CreatePlace = PlaceFormSchema.omit({ id: true});
-
+const UpdatePhoto = PhotoFormSchema.omit({ id: true });
 
 export async function createInvoice(prevState: State, formData: FormData) {
   // Validate form using Zod
@@ -186,4 +191,26 @@ export async function deletePlace(id: string) {
     message: 'Database Error: Failed to Delete Place.',
   };
 }
+}
+
+
+export async function updatePhoto(id: string, formData: FormData) {
+  const { created_date } = UpdatePhoto.parse({
+    created_date: formData.get('created_date')
+  });
+ 
+  
+  try{
+  await sql`
+    UPDATE album
+    SET created_date = ${created_date}
+    WHERE id = ${id}
+  `;
+  } catch(error) {
+    return {
+      message: 'Database Error: Failed to Update Invoice.',
+    };
+  }
+  revalidatePath('/dashboard/album');
+  redirect('/dashboard/album');
 }

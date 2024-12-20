@@ -3,7 +3,7 @@ import { type NextRequest } from 'next/server'
 
 const client = await db.connect();
 
-const ITEMS_PER_PAGE = 5
+const ITEMS_PER_PAGE = 15
 
 async function fetchPhotosinBatch(offset : number) {
   try {
@@ -11,6 +11,7 @@ async function fetchPhotosinBatch(offset : number) {
       SELECT 
         * 
       FROM album
+      WHERE created_date IS NULL
       OFFSET ${offset * ITEMS_PER_PAGE}
       LIMIT ${ITEMS_PER_PAGE}
     `;
