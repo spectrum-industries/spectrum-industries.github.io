@@ -62,6 +62,7 @@ export default function Album() {
           const isReachBottom =
             container.scrollHeight <= container.scrollTop + container.clientHeight + 10;
           if (isReachBottom && !loading && !reachedEnd) {
+            console.log(photos)
             setOffset((prev) => prev + 1);
           }
         }

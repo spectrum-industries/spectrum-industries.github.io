@@ -32,14 +32,14 @@ export default function EditInvoiceForm({
   return (
     <form action={updatePhotoWithId}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        {/* Customer Name */}
+        {/* Customer Name */} 
         <div className="mb-4">
           <label htmlFor="customer" className="mb-2 block text-sm font-medium">
             Look at the pretty picture
           </label>
           <div
           className={`rounded-xl bg-gray-50 p-5 flex justify-center items-center ${imageClass}`}
-          style={{ width: '100%', maxWidth: '500px', margin: '0 auto' }}
+          style={{ width: '100%', margin: '0 auto' }}
         >
               <img 
                 src={photo?.photo}

@@ -11,7 +11,7 @@ async function fetchPhotosinBatch(offset : number) {
       SELECT 
         * 
       FROM album
-      WHERE created_date IS NULL
+      ORDER BY created_date DESC, id ASC
       OFFSET ${offset * ITEMS_PER_PAGE}
       LIMIT ${ITEMS_PER_PAGE}
     `;
