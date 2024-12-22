@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { AlbumTable } from '@/app/lib/definitions';
@@ -63,7 +63,6 @@ export default function Album() {
           const isReachBottom =
             container.scrollHeight <= container.scrollTop + container.clientHeight + 10;
           if (isReachBottom && !loading && !reachedEnd) {
-            console.log(photos)
             setOffset((prev) => prev + 1);
           }
         }
@@ -78,6 +77,20 @@ export default function Album() {
     };
   }, [loading, reachedEnd]);
 
+  // Helper to group photos by month
+  const groupPhotosByMonth = (photos: AlbumTable[]) => {
+    const grouped: { [key: string]: AlbumTable[] } = {};
+    photos.forEach((photo) => {
+      const date = new Date(photo.created_date);
+      const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      if (!grouped[month]) grouped[month] = [];
+      grouped[month].push(photo);
+    });
+    return grouped;
+  };
+
+  const groupedPhotos = groupPhotosByMonth(photos);
+
   return (
     <div
       ref={containerRef}
@@ -88,31 +101,36 @@ export default function Album() {
         msOverflowStyle: 'none',
       }}
     >
-      <div className="flex justify-end w-full">
-      <CreatePhoto />
+      <div className="flex justify-end w-full pb-5">
+        <CreatePhoto />
       </div>
-      <div style={gridStyle}>
-        {photos.map((photo) => (
-          <div key={photo.id} style={getPhotoStyle(photo)}>
-            <a href={`/dashboard/album/${photo.id}/edit`}>
-              <div style={imageContainerStyle}>
-                <img
-                  src={photo.photo}
-                  alt={`Photo ID: ${photo.id}`}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: photo.orientation === 'Portrait' ? 'contain' : 'cover',
-                    transition: 'transform 0.3s ease',
-                    border: '10px solid #ECECEE',
-                    borderRadius: '5px',
-                  }}
-                />
+      {Object.entries(groupedPhotos).map(([month, monthPhotos]) => (
+        <div key={month}>
+          <h2 style={monthHeaderStyle}>{month}</h2>
+          <div style={gridStyle}>
+            {monthPhotos.map((photo) => (
+              <div key={photo.id} style={getPhotoStyle(photo)}>
+                <a href={`/dashboard/album/${photo.id}/edit`}>
+                  <div style={imageContainerStyle}>
+                    <img
+                      src={photo.photo}
+                      alt={`Photo ID: ${photo.id}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: photo.orientation === 'Portrait' ? 'contain' : 'cover',
+                        transition: 'transform 0.3s ease',
+                        border: '10px solid #ECECEE',
+                        borderRadius: '5px',
+                      }}
+                    />
+                  </div>
+                </a>
               </div>
-            </a>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
       {loading && <p>Loading more photos...</p>}
       {reachedEnd && <p>No more photos to load!</p>}
     </div>
@@ -124,6 +142,13 @@ const gridStyle = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
   gap: '10px',
+};
+
+// Style for month header
+const monthHeaderStyle = {
+  fontSize: '1.5rem',
+  fontWeight: 'bold',
+  margin: '20px 0',
 };
 
 // Function to determine the style based on photo orientation
