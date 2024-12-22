@@ -286,7 +286,7 @@ export async function createPhoto(state: PhotoState, formData: FormData): Promis
     const client = new S3Client({ region });
 
     const { url, fields } = await createPresignedPost(client, {
-      Bucket: process.env.AWS_BUCKET_NAME,
+      Bucket: s3BucketName ,
       Key: `${uuidv4()}_${photo.name}`,
       Conditions: [['content-length-range', 0, MAX_FILE_SIZE]],
       Fields: {
@@ -314,7 +314,6 @@ export async function createPhoto(state: PhotoState, formData: FormData): Promis
 
     // Store the photo URL and metadata in the database
     const photoUrl = `${url}${fields.key}`;
-    console.log(photoUrl);
 
     // Uncomment to save to the database
     await sql`
