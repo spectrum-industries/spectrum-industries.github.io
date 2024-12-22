@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { AlbumTable } from '@/app/lib/definitions';
+import { CreatePhoto } from '@/app/ui/album/buttons';
 
 export default function Album() {
   const [photos, setPhotos] = useState<AlbumTable[]>([]);
@@ -87,6 +88,9 @@ export default function Album() {
         msOverflowStyle: 'none',
       }}
     >
+      <div className="flex justify-end w-full">
+      <CreatePhoto />
+      </div>
       <div style={gridStyle}>
         {photos.map((photo) => (
           <div key={photo.id} style={getPhotoStyle(photo)}>

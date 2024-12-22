@@ -4,6 +4,9 @@ import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { createPresignedPost } from '@aws-sdk/s3-presigned-post'
+import { S3Client } from '@aws-sdk/client-s3'
+import { v4 as uuidv4 } from 'uuid'
 
 const FormSchema = z.object({
   id: z.string(),
@@ -40,16 +43,42 @@ export type PlaceState = {
   message?: string | null;
 };
 
+export type PhotoState = {
+  errors?: {
+    date?: string[];
+    photo?: File | undefined;
+    orientation?: string[];
+    height?: string[];
+    width?: string[];
+  };
+  message?: string | null;
+};
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
 const PhotoFormSchema = z.object({
   id: z.string(),
-  created_date: z.string()
+  created_date: z.string().nonempty({ message: 'Created date is required.' }), // Make created_date compulsory
+  photo: z.instanceof(File)
+    .refine(file => file.size <= MAX_FILE_SIZE, {
+      message: `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+    })
+    .refine(file => ACCEPTED_IMAGE_TYPES.includes(file.type), {
+      message: "File must be a JPEG, PNG, or WebP"
+    }),
+  height : z.string(),
+  width : z.string(),
+  orientation : z.string(),
 });
+
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdatePlace = PlaceFormSchema.omit({ id: true, place: true });
 const CreatePlace = PlaceFormSchema.omit({ id: true});
 const UpdatePhoto = PhotoFormSchema.omit({ id: true });
+const CreatePhoto = PhotoFormSchema.omit({ id: true });
 
 export async function createInvoice(prevState: State, formData: FormData) {
   // Validate form using Zod
@@ -193,7 +222,6 @@ export async function deletePlace(id: string) {
 }
 }
 
-
 export async function updatePhoto(id: string, formData: FormData) {
   const { created_date } = UpdatePhoto.parse({
     created_date: formData.get('created_date')
@@ -213,4 +241,92 @@ export async function updatePhoto(id: string, formData: FormData) {
   }
   revalidatePath('/dashboard/album');
   redirect('/dashboard/album');
+}
+
+export async function createPhoto(state: PhotoState, formData: FormData): Promise<PhotoState> {
+  // Validate form using Zod
+  const validatedFields = CreatePhoto.safeParse({
+    created_date: formData.get('created_date'),
+    photo: formData.get('photo') as File,
+    height: formData.get('height')?.toString(),
+    width: formData.get('width')?.toString(),
+    orientation: formData.get('orientation'),
+  });
+
+  // Check if validation fails
+  if (!validatedFields.success) {
+    console.error(
+      'Validation errors:',
+      validatedFields.error.flatten().fieldErrors
+    );
+    return {
+      errors: validatedFields.error.flatten().fieldErrors as PhotoState['errors'],
+      message: 'Missing Fields. Failed to Create Photo.',
+    };
+  }
+
+  const { created_date, photo, height, width, orientation } = validatedFields.data;
+
+  try {
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID || '';
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || '';
+    const s3BucketName = process.env.AWS_BUCKET_NAME || '';
+    const region = process.env.AWS_REGION || '';
+
+    if (!accessKeyId || !secretAccessKey || !s3BucketName || !region) {
+      throw new Error(
+        `AWS credentials or bucket configuration is missing. 
+        accessKeyId: ${accessKeyId ? 'OK' : 'MISSING'}, 
+        secretAccessKey: ${secretAccessKey ? 'OK' : 'MISSING'}, 
+        s3BucketName: ${s3BucketName ? 'OK' : 'MISSING'}, 
+        region: ${region ? 'OK' : 'MISSING'}`
+      );
+    }
+
+    const client = new S3Client({ region });
+
+    const { url, fields } = await createPresignedPost(client, {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: `${uuidv4()}_${photo.name}`,
+      Conditions: [['content-length-range', 0, MAX_FILE_SIZE]],
+      Fields: {
+        acl: 'bucket-owner-full-control',
+        'Content-Type': photo.type,
+      },
+      Expires: 600,
+    });
+
+    // Upload the file to S3 using fetch
+    const formDataForUpload = new FormData();
+    Object.entries(fields).forEach(([key, value]) => {
+      formDataForUpload.append(key, value as string);
+    });
+    formDataForUpload.append('file', photo);
+
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formDataForUpload,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload file to S3');
+    }
+
+    // Store the photo URL and metadata in the database
+    const photoUrl = `${url}${fields.key}`;
+    console.log(photoUrl);
+
+    // Uncomment to save to the database
+    await sql`
+      INSERT INTO album (created_date, photo, orientation, height, width)
+      VALUES (${created_date}, ${photoUrl}, ${orientation}, ${height}, ${width})
+    `;
+
+    // Revalidate and redirect on success
+    revalidatePath('/dashboard/album');
+    redirect('/dashboard/album');
+  } catch (error) {
+    console.error('Error in createPhoto:', error);
+    return { message: 'Error: Failed to Create Photo.', errors: {} };
+  }
 }

@@ -8,6 +8,7 @@
   "packageManager": "pnpm@9.11.0",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.709.0",
+    "@aws-sdk/s3-presigned-post": "^3.717.0",
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/forms": "^0.5.9",
     "@vercel/postgres": "^0.10.0",
@@ -24,9 +25,11 @@
     "tailwindcss": "3.4.15",
     "typescript": "5.7.2",
     "use-debounce": "^10.0.4",
+    "uuid": "^11.0.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/aws-sdk": "^2.7.4",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "22.10.1",
     "@types/react": "npm:types-react@19.0.0-rc.1",

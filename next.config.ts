@@ -6,7 +6,12 @@ const nextConfig: NextConfig = {
   // basePath: "/spectrum-industries.github.io",
     images: {
       domains: ['spectrum-album-bucket.s3.eu-north-1.amazonaws.com'],
-    },  
+    },
+    experimental: {
+      serverActions: {
+        bodySizeLimit: '10mb',
+      },
+    },
 };
 
 export default nextConfig;
