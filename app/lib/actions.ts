@@ -264,7 +264,7 @@ export async function createPhoto(state: PhotoState, formData: FormData): Promis
       message: 'Missing Fields. Failed to Create Photo.',
     };
   }
-
+  let redirectPath: string | null = null
   const { created_date, photo, height, width, orientation } = validatedFields.data;
 
   try {
@@ -322,10 +322,19 @@ export async function createPhoto(state: PhotoState, formData: FormData): Promis
     `;
 
     // Revalidate and redirect on success
-    revalidatePath('/dashboard/album');
-    redirect('/dashboard/album');
+    redirectPath = `/dashboard/album`
   } catch (error) {
     console.error('Error in createPhoto:', error);
+    redirectPath = `/`
     return { message: 'Error: Failed to Create Photo.', errors: {} };
+  } finally {
+    if(redirectPath){
+      revalidatePath(redirectPath)
+      redirect(redirectPath)
+    }
+    else{
+      revalidatePath('/')
+      redirect('/')
+    }
   }
 }
