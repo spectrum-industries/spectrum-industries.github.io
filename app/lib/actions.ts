@@ -77,7 +77,7 @@ const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdatePlace = PlaceFormSchema.omit({ id: true, place: true });
 const CreatePlace = PlaceFormSchema.omit({ id: true});
-const UpdatePhoto = PhotoFormSchema.omit({ id: true });
+const UpdatePhoto = PhotoFormSchema.omit({ id: true, photo: true, height: true, width: true, orientation:true });
 const CreatePhoto = PhotoFormSchema.omit({ id: true });
 
 export async function createInvoice(prevState: State, formData: FormData) {
