@@ -18,7 +18,6 @@ const links = [
     icon: DocumentDuplicateIcon,
   },
   { name: 'Places Visited', href: '/dashboard/places', icon: UserGroupIcon },
-  { name: 'Invoices', href: '/dashboard/invoices', icon: DocumentDuplicateIcon },
 ];
 
 export default function NavLinks() {

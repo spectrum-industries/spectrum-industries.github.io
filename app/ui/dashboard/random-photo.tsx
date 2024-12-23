@@ -26,13 +26,16 @@ export default async function RandomPhoto() {
           className={`rounded-xl bg-gray-50 p-5 flex justify-center items-center ${imageClass}`}
           style={{ width: '100%', maxWidth: '500px', margin: '0 auto' }}
         >
-              <Image 
-                src={randomPhoto?.photo}
-                alt={randomPhoto?.id}
-                width={randomPhoto?.width}
-                height={randomPhoto?.height}
-                className="rounded"
-                style={{ objectFit: 'contain' }}
+              <img
+              src={randomPhoto?.photo}
+              alt={`Photo ID: ${randomPhoto?.id}`}
+              className="rounded"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: randomPhoto?.orientation === 'Portrait' ? 'contain' : 'cover',
+                transition: 'transform 0.3s ease',
+              }}
               />
           </div>
     </div>
